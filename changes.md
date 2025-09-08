@@ -87,5 +87,3 @@ Per perfezionare il processo di deploy della `gofrescoapp`, si consiglia di segu
 8.  **Sicurezza:**
     - Mantenere aggiornate tutte le dipendenze (`npm audit`).
     - Applicare le best practice di sicurezza per le API tRPC (validazione input, autenticazione/autorizzazione).
-
-ok.
