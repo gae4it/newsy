@@ -9,6 +9,7 @@ L'applicazione deve permettere agli utenti di navigare tra i prodotti, aggiunger
 ## 2. Stack Tecnologico di Riferimento
 
 Devi utilizzare esclusivamente le tecnologie e le convenzioni del progetto esistente:
+
 - **Framework:** Next.js (v15+) con App Router
 - **Linguaggio:** TypeScript
 - **Styling:** Tailwind CSS
@@ -25,6 +26,7 @@ Segui questi passi in ordine per costruire l'applicazione.
 **Task:** Modifica il file `gofrescoapp/gofrescoapp/prisma/schema.prisma` per definire il modello dati dell'applicazione.
 
 **Istruzioni:**
+
 1. Rimuovi il modello `Post` di esempio.
 2. Definisci i seguenti modelli con le relative relazioni e indici:
    - `Category`: Rappresenta una categoria di prodotti (es. "Frutta").
@@ -63,6 +65,7 @@ Segui questi passi in ordine per costruire l'applicazione.
 **Task:** Crea uno script di seed in `gofrescoapp/gofrescoapp/prisma/seed.ts` per popolare il database con i dati iniziali.
 
 **Istruzioni:**
+
 1.  Usa Prisma Client e la funzione `upsert` per evitare duplicati.
 2.  Popola il database usando la **Lista Prodotti di Riferimento** fornita alla fine di questo prompt.
 3.  Associa correttamente ogni `Product` alla sua `Category` e ogni `Variant` al suo `Product`.
@@ -73,6 +76,7 @@ Segui questi passi in ordine per costruire l'applicazione.
 **Task:** Crea gli endpoint tRPC necessari in `gofrescoapp/gofrescoapp/src/server/api/routers/`.
 
 **Istruzioni:**
+
 1.  **`category.ts`**: Crea un router per le categorie con una procedura `getAll` che restituisce tutte le categorie.
 2.  **`product.ts`**: Crea un router per i prodotti con una procedura `getByCategory` che accetta un `categoryId` (validato con Zod) e restituisce i prodotti e le loro varianti.
 3.  **`order.ts`**: Crea un router per gli ordini con una procedura `create` che accetta i dati dell'ordine (validati con Zod) e li salva nel database.
@@ -83,6 +87,7 @@ Segui questi passi in ordine per costruire l'applicazione.
 **Task:** Sviluppa le pagine e i componenti React necessari in `gofrescoapp/gofrescoapp/src/app/`.
 
 **Istruzioni:**
+
 1.  **Gestione Stato Lista Spesa:**
     - Crea `src/contexts/CartContext.tsx`.
     - Il context deve gestire un array di items (`variantId`, `quantity`) e le funzioni per manipolarlo (`addItem`, `removeItem`, `updateItemQuantity`).
@@ -109,6 +114,7 @@ Segui questi passi in ordine per costruire l'applicazione.
 Basarsi sulla seguente struttura dati per il seed. Le icone sono un riferimento per la UI.
 
 #### Categoria: Frutta (`WEIGHT`) 🍎
+
 - **Mele** (🍎): Kanzi, Granny Smith, Royal Gala, Fuji, Golden Delicious
 - **Pere** (🍐): Abate, Carmen, Guyot, Santa Maria, William, Kaiser, Decana
 - **Uva** (🍇): da tavola, Vittoria, Italia, Red Globe, Uva spina, Uva fragola
@@ -125,6 +131,7 @@ Basarsi sulla seguente struttura dati per il seed. Le icone sono un riferimento 
 - **Limoni** (🍋): Femminello, Meyer, Eureka
 
 #### Categoria: Verdura (`WEIGHT`) 🥬
+
 - **Carciofi** (🌱): Romanesco, Spinoso, Violetto
 - **Asparagi** (🥬): verdi, bianchi, viola
 - **Zucca** (🎃): Butternut, Hokkaido, Spaghetti
@@ -140,6 +147,7 @@ Basarsi sulla seguente struttura dati per il seed. Le icone sono un riferimento 
 - **Carote** (🥕): arancioni, gialle, viola
 
 #### Categoria: Alimentari (`PIECES`) 🥖
+
 - **Affettati di carne** (🥓): Crudo di Parma, Crudo San Daniele, Cotto, Salame, Coppa, Pancetta, Culatello, Speck, Bresaola, Mortadella, Wurstel
 - **Conserve di pesce** (🐟): Tonno in olio, Tonno al naturale, Tonno rosso, Ventresca di tonno, Tonno pinne gialle, Salmone affumicato, Sardine in olio, Acciughe in olio, Acciughe in salsa piccante
 - **Legumi e polenta** (🫘): Ceci, Fagioli borlotti, Fagioli cannellini, Lenticchie, Piselli, Polenta, Polenta Taragna, Purè di Patate
@@ -160,6 +168,7 @@ Basarsi sulla seguente struttura dati per il seed. Le icone sono un riferimento 
 - **Birra** (🍺): Chiara, Scura, Rossa, Artigianale
 
 #### Categoria: Prodotti per la Casa (`PIECES`) 🧹
+
 - **Detersivi per piatti** (🧼): liquidi, in polvere, in pastiglie
 - **Detersivi per bucato** (👕): liquidi, in polvere, in capsule
 - **Pulitori multiuso** (🧴): spray, liquidi, in pastiglie
@@ -174,3 +183,5 @@ Basarsi sulla seguente struttura dati per il seed. Le icone sono un riferimento 
 ## 6. Output Atteso
 
 Fornisci il codice completo per ogni file richiesto, un passo alla volta, iniziando con `prisma.schema.prisma`. Non aggiungere spiegazioni al di fuori del codice.
+
+last update 8.9.25 23:23
