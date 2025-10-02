@@ -237,6 +237,9 @@ export default function Home() {
             <p className="mb-2">
               Content belongs to respective news organizations.
             </p>
+            <p className="mb-2">
+              This website is for educational and learning purposes only and is used solely for testing.
+            </p>
             <div className="flex items-center justify-center space-x-4 mt-4">
               <span className="flex items-center space-x-1">
                 <span>🇮🇹</span>
