@@ -1,53 +1,143 @@
-import Link from "next/link";
+'use client';
 
-import { LatestPost } from "@/app/_components/post";
-import { api, HydrateClient } from "@/trpc/server";
+import React, { useState } from 'react';
+import NewsButton from '@/components/NewsButton';
+import NewsCard from '@/components/NewsCard';
+import { NEWS_SOURCES } from '@/types/news';
+import type { NewsResponse, NewsLoadingState, NewsError, NewsSourceId } from '@/types/news';
 
-export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
+/**
+ * Main homepage component for the News Aggregator application
+ * Features responsive design, loading states, and error handling
+ */
+export default function Home() {
+  // State management for news data, loading, and errors
+  const [newsData, setNewsData] = useState<NewsResponse | null>(null);
+  const [loadingState, setLoadingState] = useState<NewsLoadingState>({ isLoading: false });
+  const [error, setError] = useState<NewsError | null>(null);
 
-  void api.post.getLatest.prefetch();
+  /**
+   * Fetch news from the API for a specific source
+   */
+  const fetchNews = async (sourceId: NewsSourceId) => {
+    setLoadingState({ isLoading: true, source: NEWS_SOURCES[sourceId].name });
+    setError(null);
+    setNewsData(null);
+
+    try {
+      const response = await fetch(`/api/news?site=${sourceId}`);
+      const data = await response.json() as NewsResponse;
+
+      if (!response.ok) {
+        throw new Error(data.error ?? `HTTP error! status: ${response.status}`);
+      }
+
+      setNewsData(data);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError({
+        message: errorMessage,
+        source: NEWS_SOURCES[sourceId].name
+      });
+    } finally {
+      setLoadingState({ isLoading: false });
+    }
+  };
+
+  // Convert NEWS_SOURCES object to array for mapping
+  const sourcesList = Object.values(NEWS_SOURCES);
 
   return (
-    <HydrateClient>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-            Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-          </h1>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/usage/first-steps"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">First Steps →</h3>
-              <div className="text-lg">
-                Just the basics - Everything you need to know to set up your
-                database and authentication.
-              </div>
-            </Link>
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/introduction"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">Documentation →</h3>
-              <div className="text-lg">
-                Learn more about Create T3 App, the libraries it uses, and how
-                to deploy it.
-              </div>
-            </Link>
-          </div>
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-2xl text-white">
-              {hello ? hello.greeting : "Loading tRPC query..."}
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Header Section */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+              📰 Newsy
+            </h1>
+            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
+              Your private news aggregator - Get the latest headlines from top sources worldwide
             </p>
+            <div className="mt-4 flex items-center justify-center space-x-2 text-sm text-gray-500">
+              <span>🔒</span>
+              <span>Private</span>
+              <span>•</span>
+              <span>🚫</span>
+              <span>No tracking</span>
+              <span>•</span>
+              <span>⚡</span>
+              <span>Real-time</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8">
+        {/* News Sources Grid */}
+        <section className="mb-8">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+            Select a News Source
+          </h2>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-8">
+            {sourcesList.map((source) => (
+              <NewsButton
+                key={source.id}
+                source={source}
+                onClick={(sourceId: string) => fetchNews(sourceId as NewsSourceId)}
+                isLoading={loadingState.isLoading && loadingState.source === source.name}
+                disabled={loadingState.isLoading}
+              />
+            ))}
           </div>
 
-          <LatestPost />
-        </div>
-      </main>
-    </HydrateClient>
+          {/* Loading indicator for active source */}
+          {loadingState.isLoading && (
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center space-x-2 text-blue-600">
+                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <span className="font-medium">Fetching news from {loadingState.source}...</span>
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* News Display Section */}
+        <section>
+          <NewsCard 
+            newsData={newsData}
+            isLoading={loadingState.isLoading}
+            error={error}
+          />
+        </section>
+
+        {/* Footer */}
+        <footer className="mt-16 py-8 border-t border-gray-200">
+          <div className="text-center text-sm text-gray-500">
+            <p className="mb-2">
+              Newsy aggregates news from multiple sources for personal use only.
+            </p>
+            <p className="mb-2">
+              Content belongs to respective news organizations.
+            </p>
+            <div className="flex items-center justify-center space-x-4 mt-4">
+              <span className="flex items-center space-x-1">
+                <span>🇮🇹</span>
+                <span>Italian Sources: {sourcesList.filter(s => s.country === 'IT').length}</span>
+              </span>
+              <span className="flex items-center space-x-1">
+                <span>🇺🇸</span>
+                <span>US Sources: {sourcesList.filter(s => s.country === 'US').length}</span>
+              </span>
+              <span className="flex items-center space-x-1">
+                <span>🇩🇪</span>
+                <span>German Sources: {sourcesList.filter(s => s.country === 'DE').length}</span>
+              </span>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </main>
   );
 }
