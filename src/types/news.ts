@@ -63,7 +63,7 @@ export const NEWS_SOURCES: Record<NewsSourceId, NewsSource> = {
   [NewsSourceId.TELEVIDEO]: {
     id: NewsSourceId.TELEVIDEO,
     name: 'Televideo RAI',
-    url: 'https://www.televideo.rai.it/televideo/pub/solotesto.jsp',
+    url: 'https://www.televideo.rai.it/televideo/pub/solotesto.jsp?pagina=103',
     country: 'IT',
     category: 'general'
   },
@@ -112,21 +112,21 @@ export const NEWS_SOURCES: Record<NewsSourceId, NewsSource> = {
   [NewsSourceId.K68_IT]: {
     id: NewsSourceId.K68_IT,
     name: '68k News IT',
-    url: 'https://68k.news/index.php?section=nation&loc=IT',
+    url: 'http://68k.news/index.php?section=nation&loc=IT',
     country: 'IT',
     category: 'tech'
   },
   [NewsSourceId.K68_DE]: {
     id: NewsSourceId.K68_DE,
     name: '68k News DE',
-    url: 'https://68k.news/index.php?section=nation&loc=DE',
+    url: 'http://68k.news/index.php?section=nation&loc=DE',
     country: 'DE',
     category: 'tech'
   },
   [NewsSourceId.K68_US]: {
     id: NewsSourceId.K68_US,
     name: '68k News US',
-    url: 'https://68k.news/index.php?section=nation&loc=US',
+    url: 'http://68k.news/index.php?section=nation&loc=US',
     country: 'US',
     category: 'tech'
   }

@@ -16,15 +16,19 @@ const createHttpClient = () => {
     headers: {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-      'Accept-Language': 'en-US,en;q=0.5',
+      'Accept-Language': 'de-DE,de;q=0.9,en-US,en;q=0.8,it;q=0.7',
       'Accept-Encoding': 'gzip, deflate, br',
+      'Accept-Charset': 'utf-8, iso-8859-1;q=0.5',
       'Connection': 'keep-alive',
-    }
+    },
+    // Ensure proper UTF-8 encoding for German characters
+    responseType: 'text',
+    responseEncoding: 'utf8'
   });
 };
 
 /**
- * Scrape Televideo RAI news
+ * Scrape Televideo RAI news - Page 103 with chronological news format
  */
 const scrapeTelevideoNews = async (): Promise<string[]> => {
   const client = createHttpClient();
@@ -33,23 +37,61 @@ const scrapeTelevideoNews = async (): Promise<string[]> => {
   
   const titles: string[] = [];
   
-  // Televideo has a specific structure - looking for news items in the text
-  $('pre').each((_, element) => {
-    const text = $(element).text();
-    const lines = text.split('\n');
+  // Extract all text content from the page
+  const pageText = $('body').text();
+  const lines = pageText.split('\n');
+  
+  lines.forEach(line => {
+    line = line.trim();
     
-    lines.forEach(line => {
-      line = line.trim();
-      if (line.length > 20 && line.length < 200 && !line.includes('RAI') && !line.includes('Televideo')) {
-        // Basic filtering for news-like content
-        if (/^[A-Z]/.test(line) && line.includes(' ')) {
-          titles.push(line);
-        }
+    // Look for timestamped news entries (format: "DD/MM HH:MM    News title")
+    const timestampRegex = /^\d{2}\/\d{2}\s+\d{2}:\d{2}\s+(.+)$/;
+    const timestampMatch = timestampRegex.exec(line);
+    if (timestampMatch?.[1]) {
+      const newsTitle = timestampMatch[1].trim();
+      if (newsTitle.length > 10 && newsTitle.length < 150) {
+        titles.push(newsTitle);
       }
-    });
+    }
+    
+    // Also look for main headlines in CAPS (like "FLOTILLA, BARCHE TRAINATE AD ASHDOD")
+    else if (line.length > 15 && line.length < 100 && 
+             /^[A-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ]/.test(line) &&
+             line === line.toUpperCase() &&
+             !line.includes('PAGINA') && 
+             !line.includes('TELEVIDEO') &&
+             !line.includes('RAI') &&
+             !line.includes('HTTP') &&
+             !/^\d/.exec(line) && // Exclude numbers
+             line.includes(' ') &&
+             !line.includes('PRIMA') &&
+             !line.includes('ULTIMA') &&
+             !line.includes('POLITICA') &&
+             !line.includes('ECONOMIA') &&
+             !line.includes('DALL\'ITALIA') &&
+             !line.includes('DAL MONDO') &&
+             !line.includes('CULTURE')) {
+      titles.push(line);
+    }
+    
+    // Look for regular news lines (mixed case, reasonable length)
+    else if (line.length > 20 && line.length < 120 && 
+             /^[A-ZÀ-ÿĀ-ž]/.test(line) && 
+             line.includes(' ') &&
+             !line.includes('Pagina') &&
+             !line.includes('sottopagina') &&
+             !line.includes('inserisci') &&
+             !line.includes('Cattura') &&
+             !/^\d{2}\/\d{2}/.exec(line) && // Not a timestamp
+             !line.includes('Copyright') &&
+             !line.includes('http') &&
+             /[a-zàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþ]/.test(line)) { // Contains lowercase
+      titles.push(line);
+    }
   });
   
-  return titles.slice(0, 10); // Return first 10 titles
+  // Remove duplicates and return up to 50 titles
+  return [...new Set(titles)].slice(0, 50);
 };
 
 /**
@@ -70,7 +112,7 @@ const scrapeIlFattoNews = async (): Promise<string[]> => {
     }
   });
   
-  return [...new Set(titles)].slice(0, 10); // Remove duplicates and return first 10
+  return [...new Set(titles)].slice(0, 50); // Remove duplicates and return first 50
 };
 
 /**
@@ -91,7 +133,7 @@ const scrapeRepubblicaNews = async (): Promise<string[]> => {
     }
   });
   
-  return [...new Set(titles)].slice(0, 10);
+  return [...new Set(titles)].slice(0, 50);
 };
 
 /**
@@ -112,7 +154,7 @@ const scrapeAnsaNews = async (): Promise<string[]> => {
     }
   });
   
-  return [...new Set(titles)].slice(0, 10);
+  return [...new Set(titles)].slice(0, 50);
 };
 
 /**
@@ -133,7 +175,7 @@ const scrapeReutersNews = async (): Promise<string[]> => {
     }
   });
   
-  return [...new Set(titles)].slice(0, 10);
+  return [...new Set(titles)].slice(0, 50);
 };
 
 /**
@@ -154,7 +196,7 @@ const scrapeNYTimesNews = async (): Promise<string[]> => {
     }
   });
   
-  return [...new Set(titles)].slice(0, 10);
+  return [...new Set(titles)].slice(0, 50);
 };
 
 /**
@@ -170,33 +212,76 @@ const scrapeBadischeNews = async (): Promise<string[]> => {
   // Badische Zeitung specific selectors
   $('h1, h2, h3, .headline, .article-title, [class*="title"]').each((_, element) => {
     const title = $(element).text().trim();
-    if (title.length > 10 && title.length < 200) {
+    // Include German characters (ß, ä, ö, ü, Ä, Ö, Ü) in validation
+    if (title.length > 10 && title.length < 200 && /[a-zA-ZäöüßÄÖÜ\s]/.test(title)) {
       titles.push(title);
     }
   });
   
-  return [...new Set(titles)].slice(0, 10);
+  return [...new Set(titles)].slice(0, 50);
 };
 
 /**
- * Scrape 68k News (all variants)
+ * Scrape 68k News (all variants) - Uses HTTP to avoid SSL certificate issues
  */
 const scrape68kNews = async (sourceId: NewsSourceId): Promise<string[]> => {
-  const client = createHttpClient();
-  const response = await client.get(NEWS_SOURCES[sourceId].url);
-  const $ = cheerio.load(response.data as string);
+  // Use HTTP instead of HTTPS to avoid SSL certificate issues
+  const httpUrl = NEWS_SOURCES[sourceId].url.replace('https://', 'http://');
   
-  const titles: string[] = [];
-  
-  // 68k News specific selectors
-  $('h1, h2, h3, .title, .headline, .story-title, a[href*="story"]').each((_, element) => {
-    const title = $(element).text().trim();
-    if (title.length > 10 && title.length < 200) {
-      titles.push(title);
-    }
+  const client = axios.create({
+    timeout: 15000, // Increased timeout for 68k news
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.5',
+      'Connection': 'keep-alive',
+    },
+    // Disable SSL verification for this source
+    httpsAgent: false,
   });
-  
-  return [...new Set(titles)].slice(0, 10);
+
+  try {
+    const response = await client.get(httpUrl);
+    const $ = cheerio.load(response.data as string);
+    
+    const titles: string[] = [];
+    
+    // 68k News specific selectors - look for article links
+    $('a').each((_, element) => {
+      const $element = $(element);
+      const href = $element.attr('href');
+      const title = $element.text().trim();
+      
+      // Filter for actual news articles - support German characters
+      if (href && 
+          href.includes('article.php') && 
+          title && 
+          title.length > 10 && 
+          title.length < 200 && 
+          !title.includes('68k.news') &&
+          !title.toLowerCase().includes('home') &&
+          !title.toLowerCase().includes('about') &&
+          /[a-zA-ZäöüßÄÖÜ\s]/.test(title)) {
+        titles.push(title);
+      }
+    });
+    
+    // If no articles found with article.php, try other selectors
+    if (titles.length === 0) {
+      $('h1, h2, h3, .title, .headline, .story-title').each((_, element) => {
+        const title = $(element).text().trim();
+        if (title.length > 10 && title.length < 200 && !title.includes('68k.news') && /[a-zA-ZäöüßÄÖÜ\s]/.test(title)) {
+          titles.push(title);
+        }
+      });
+    }
+    
+    return [...new Set(titles)].slice(0, 50);
+  } catch (error) {
+    console.error(`Error scraping 68k news (${sourceId}):`, error);
+    // Return empty array instead of throwing to allow other sources to work
+    return [];
+  }
 };
 
 /**
