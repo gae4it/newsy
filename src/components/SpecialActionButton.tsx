@@ -38,10 +38,11 @@ const SpecialActionButton: React.FC<SpecialActionButtonProps> = ({
       onClick={handleClick}
       disabled={disabled || isLoading}
       className={`
-        relative overflow-hidden rounded-xl px-8 py-6 text-white font-bold text-lg
+        relative overflow-hidden rounded-xl px-6 py-6 text-white font-bold text-lg
         transition-all duration-300 transform hover:scale-105 focus:outline-none
         focus:ring-4 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed
         disabled:transform-none shadow-2xl hover:shadow-3xl border-2 border-white/20
+        w-72 max-w-full mx-auto flex-shrink-0
         ${getCategoryColor(action.category)}
         ${isLoading ? 'animate-pulse' : ''}
       `}

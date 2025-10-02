@@ -141,7 +141,7 @@ export default function Home() {
               📰 Newsy
             </h1>
             <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
-              Your private news aggregator - Get the latest headlines from top sources worldwide
+              Your private news aggregator
             </p>
             <div className="mt-4 flex items-center justify-center space-x-2 text-sm text-gray-500">
               <span>🔒</span>
@@ -161,24 +161,22 @@ export default function Home() {
         {/* Special Actions Section */}
         <section className="mb-12">
           <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
-            🚀 Special Actions
+            🚀 News Prompt Generator
           </h2>
           
-          <div className="flex justify-center mb-8">
-            <div className="space-y-4 max-w-md">
-              <SpecialActionButton
-                action={SPECIAL_ACTIONS[SpecialActionId.ALL_SOURCES_EN]}
-                onClick={handleSpecialAction}
-                isLoading={batchLoading}
-                disabled={loadingState.isLoading}
-              />
-              <SpecialActionButton
-                action={SPECIAL_ACTIONS[SpecialActionId.ALL_SOURCES_IT]}
-                onClick={handleSpecialAction}
-                isLoading={batchLoading}
-                disabled={loadingState.isLoading}
-              />
-            </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-2 mb-8 max-w-2xl mx-auto">
+            <SpecialActionButton
+              action={SPECIAL_ACTIONS[SpecialActionId.ALL_SOURCES_EN]}
+              onClick={handleSpecialAction}
+              isLoading={batchLoading}
+              disabled={loadingState.isLoading}
+            />
+            <SpecialActionButton
+              action={SPECIAL_ACTIONS[SpecialActionId.ALL_SOURCES_IT]}
+              onClick={handleSpecialAction}
+              isLoading={batchLoading}
+              disabled={loadingState.isLoading}
+            />
           </div>
         </section>
 
@@ -240,7 +238,7 @@ export default function Home() {
             <p className="mb-2">
               This website is for educational and learning purposes only and is used solely for testing.
             </p>
-            <div className="flex items-center justify-center space-x-4 mt-4">
+            <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
               <span className="flex items-center space-x-1">
                 <span>🇮🇹</span>
                 <span>Italian Sources: {sourcesList.filter(s => s.country === 'IT').length}</span>
@@ -252,6 +250,10 @@ export default function Home() {
               <span className="flex items-center space-x-1">
                 <span>🇩🇪</span>
                 <span>German Sources: {sourcesList.filter(s => s.country === 'DE').length}</span>
+              </span>
+              <span className="flex items-center space-x-1">
+                <span>🇪🇺</span>
+                <span>European Sources: {sourcesList.filter(s => s.country === 'EU').length}</span>
               </span>
             </div>
           </div>

@@ -332,6 +332,445 @@ const scrape68kNews = async (sourceId: NewsSourceId): Promise<string[]> => {
 };
 
 /**
+ * Scrape Il Sole 24 Ore news
+ */
+const scrapeIlSole24OreNews = async (): Promise<string[]> => {
+  try {
+    const client = createHttpClient();
+    const response = await client.get(NEWS_SOURCES[NewsSourceId.IL_SOLE_24_ORE].url);
+    const html = decodeResponse(response.data as ArrayBuffer, response.headers['content-type'] as string);
+    const $ = cheerio.load(html);
+    
+    const titles: string[] = [];
+    
+    // Try multiple selectors for Il Sole 24 Ore
+    const selectors = [
+      'h1 a',
+      'h2 a', 
+      'h3 a',
+      '.article-title',
+      '.headline',
+      '.title',
+      '[data-testid*="title"]',
+      'article h1',
+      'article h2'
+    ];
+    
+    selectors.forEach(selector => {
+      $(selector).each((_, element) => {
+        const title = $(element).text().trim();
+        if (title && title.length > 10) {
+          titles.push(title);
+        }
+      });
+    });
+    
+    return [...new Set(titles)].slice(0, 50);
+  } catch (error) {
+    console.error('Error scraping Il Sole 24 Ore:', error);
+    return [];
+  }
+};
+
+/**
+ * Scrape Sky TG24 news
+ */
+const scrapeSkyTG24News = async (): Promise<string[]> => {
+  try {
+    const client = createHttpClient();
+    const response = await client.get(NEWS_SOURCES[NewsSourceId.SKY_TG24].url);
+    const html = decodeResponse(response.data as ArrayBuffer, response.headers['content-type'] as string);
+    const $ = cheerio.load(html);
+    
+    const titles: string[] = [];
+    
+    // Try multiple selectors for Sky TG24
+    const selectors = [
+      'h1 a',
+      'h2 a',
+      'h3 a',
+      '.news-title',
+      '.article-title',
+      '.headline',
+      '.title',
+      'article h1',
+      'article h2'
+    ];
+    
+    selectors.forEach(selector => {
+      $(selector).each((_, element) => {
+        const title = $(element).text().trim();
+        if (title && title.length > 10) {
+          titles.push(title);
+        }
+      });
+    });
+    
+    return [...new Set(titles)].slice(0, 50);
+  } catch (error) {
+    console.error('Error scraping Sky TG24:', error);
+    return [];
+  }
+};
+
+/**
+ * Scrape Internazionale news
+ */
+const scrapeInternazionaleNews = async (): Promise<string[]> => {
+  try {
+    const client = createHttpClient();
+    const response = await client.get(NEWS_SOURCES[NewsSourceId.INTERNAZIONALE].url);
+    const html = decodeResponse(response.data as ArrayBuffer, response.headers['content-type'] as string);
+    const $ = cheerio.load(html);
+    
+    const titles: string[] = [];
+    
+    // Try multiple selectors for Internazionale
+    const selectors = [
+      'h1 a',
+      'h2 a',
+      'h3 a',
+      '.article-title',
+      '.headline',
+      '.title',
+      'article h1',
+      'article h2'
+    ];
+    
+    selectors.forEach(selector => {
+      $(selector).each((_, element) => {
+        const title = $(element).text().trim();
+        if (title && title.length > 10) {
+          titles.push(title);
+        }
+      });
+    });
+    
+    return [...new Set(titles)].slice(0, 50);
+  } catch (error) {
+    console.error('Error scraping Internazionale:', error);
+    return [];
+  }
+};
+
+/**
+ * Scrape EuroNews news
+ */
+const scrapeEuroNewsNews = async (): Promise<string[]> => {
+  try {
+    const client = createHttpClient();
+    const titles: string[] = [];
+    const seenTitles = new Set<string>();
+    
+    // First try the RSS feed which is more reliable
+    try {
+      const rssResponse = await client.get('https://www.euronews.com/rss');
+      const rssHtml = decodeResponse(rssResponse.data as ArrayBuffer, rssResponse.headers['content-type'] as string);
+      const $rss = cheerio.load(rssHtml, { xmlMode: true });
+      
+      $rss('item title').each((_, element) => {
+        const title = $rss(element).text().trim();
+        
+        if (title && 
+            title.length > 15 && 
+            title.length < 200 &&
+            !seenTitles.has(title) &&
+            !title.includes('Latest news bulletin') &&
+            !title.includes('Watch the video')) {
+          
+          seenTitles.add(title);
+          titles.push(title);
+        }
+      });
+    } catch (rssError) {
+      console.log('RSS feed failed, trying website scraping:', rssError);
+    }
+    
+    // If RSS failed or didn't get enough titles, try website scraping
+    if (titles.length < 10) {
+      const response = await client.get(NEWS_SOURCES[NewsSourceId.EURONEWS].url);
+      const html = decodeResponse(response.data as ArrayBuffer, response.headers['content-type'] as string);
+      const $ = cheerio.load(html);
+      
+      // Look for article links and headlines
+      $('a[href*="euronews.com"]').each((_, element) => {
+        const title = $(element).text().trim();
+        
+        if (title && 
+            title.length > 15 && 
+            title.length < 200 &&
+            !seenTitles.has(title) &&
+            !title.includes('Go to') &&
+            !title.includes('Continue without') &&
+            !title.includes('Learn More') &&
+            !title.includes('Cookie')) {
+          
+          seenTitles.add(title);
+          titles.push(title);
+        }
+      });
+      
+      // Also check headers
+      $('h1, h2, h3, h4').each((_, element) => {
+        const title = $(element).text().trim();
+        
+        if (title && 
+            title.length > 15 && 
+            title.length < 200 &&
+            !seenTitles.has(title)) {
+          
+          seenTitles.add(title);
+          titles.push(title);
+        }
+      });
+    }
+    
+    return [...new Set(titles)].slice(0, 50);
+  } catch (error) {
+    console.error('Error scraping EuroNews:', error);
+    return [];
+  }
+};
+
+/**
+ * Scrape DW news
+ */
+const scrapeDWNews = async (): Promise<string[]> => {
+  try {
+    const client = createHttpClient();
+    const response = await client.get(NEWS_SOURCES[NewsSourceId.DW].url);
+    const html = decodeResponse(response.data as ArrayBuffer, response.headers['content-type'] as string);
+    const $ = cheerio.load(html);
+    
+    const titles: string[] = [];
+    
+    // Try multiple selectors for DW
+    const selectors = [
+      'h1 a',
+      'h2 a',
+      'h3 a',
+      '.article-title',
+      '.headline',
+      '.title',
+      'article h1',
+      'article h2'
+    ];
+    
+    selectors.forEach(selector => {
+      $(selector).each((_, element) => {
+        const title = $(element).text().trim();
+        if (title && title.length > 10) {
+          titles.push(title);
+        }
+      });
+    });
+    
+    return [...new Set(titles)].slice(0, 50);
+  } catch (error) {
+    console.error('Error scraping DW:', error);
+    return [];
+  }
+};
+
+/**
+ * Scrape Tagesschau news
+ */
+const scrapeTagesschauNews = async (): Promise<string[]> => {
+  try {
+    const client = createHttpClient();
+    const response = await client.get(NEWS_SOURCES[NewsSourceId.TAGESSCHAU].url);
+    const html = decodeResponse(response.data as ArrayBuffer, response.headers['content-type'] as string);
+    const $ = cheerio.load(html);
+    
+    const titles: string[] = [];
+    const seenTitles = new Set<string>();
+    
+    // Focus on article links - most effective approach based on HTML analysis
+    $('a[href]').each((_, element) => {
+      const title = $(element).text().trim();
+      const href = $(element).attr('href');
+      
+      // Filter for meaningful article titles
+      if (title && 
+          title.length > 15 && 
+          title.length < 200 &&
+          href &&
+          (href.startsWith('/') || href.includes('tagesschau.de')) &&
+          !seenTitles.has(title) &&
+          !title.includes('Cookie') &&
+          !title.includes('Datenschutz') &&
+          !title.includes('Impressum') &&
+          !title.includes('Newsletter') &&
+          !title.includes('Kontakt')) {
+        
+        seenTitles.add(title);
+        titles.push(title);
+      }
+    });
+    
+    return [...new Set(titles)].slice(0, 50);
+  } catch (error) {
+    console.error('Error scraping Tagesschau:', error);
+    return [];
+  }
+};
+
+/**
+ * Scrape Süddeutsche Zeitung news
+ */
+const scrapeSueddeutscheNews = async (): Promise<string[]> => {
+  try {
+    const client = createHttpClient();
+    const response = await client.get(NEWS_SOURCES[NewsSourceId.SUEDDEUTSCHE].url);
+    const html = decodeResponse(response.data as ArrayBuffer, response.headers['content-type'] as string);
+    const $ = cheerio.load(html);
+    
+    const titles: string[] = [];
+    const seenTitles = new Set<string>();
+    
+    // Focus on headlines in headers and article links
+    $('h1, h2, h3, h4').each((_, element) => {
+      const title = $(element).text().trim();
+      
+      if (title && 
+          title.length > 15 && 
+          title.length < 200 &&
+          !seenTitles.has(title) &&
+          !title.includes('Newsletter') &&
+          !title.includes('Datenschutz') &&
+          !title.includes('Cookie') &&
+          !title.includes('Menü') &&
+          !title.includes('Suche')) {
+        
+        seenTitles.add(title);
+        titles.push(title);
+      }
+    });
+    
+    // Also check article links
+    $('a[href*="sueddeutsche.de"]').each((_, element) => {
+      const title = $(element).text().trim();
+      
+      if (title && 
+          title.length > 15 && 
+          title.length < 200 &&
+          !seenTitles.has(title)) {
+        
+        seenTitles.add(title);
+        titles.push(title);
+      }
+    });
+    
+    return [...new Set(titles)].slice(0, 50);
+  } catch (error) {
+    console.error('Error scraping Süddeutsche Zeitung:', error);
+    return [];
+  }
+};
+
+/**
+ * Scrape FAZ news
+ */
+const scrapeFAZNews = async (): Promise<string[]> => {
+  try {
+    const client = createHttpClient();
+    const response = await client.get(NEWS_SOURCES[NewsSourceId.FAZ].url);
+    const html = decodeResponse(response.data as ArrayBuffer, response.headers['content-type'] as string);
+    const $ = cheerio.load(html);
+    
+    const titles: string[] = [];
+    const seenTitles = new Set<string>();
+    
+    // Look for FAZ+ articles and regular links
+    $('a[href*="faz.net"]').each((_, element) => {
+      let title = $(element).text().trim();
+      
+      // Clean FAZ+ pattern: "FAZ+ CATEGORY : Title"
+      if (title.includes('FAZ+')) {
+        const colonIndex = title.indexOf(' : ');
+        if (colonIndex > -1) {
+          title = title.substring(colonIndex + 3).trim();
+        }
+      }
+      
+      if (title && 
+          title.length > 15 && 
+          title.length < 200 &&
+          !seenTitles.has(title) &&
+          !title.includes('Newsletter') &&
+          !title.includes('Datenschutz') &&
+          !title.includes('Cookie') &&
+          !title.includes('Kontakt') &&
+          !title.includes('Impressum') &&
+          !title.includes('Alle anzeigen')) {
+        
+        seenTitles.add(title);
+        titles.push(title);
+      }
+    });
+    
+    // Also check headlines in headers
+    $('h1, h2, h3').each((_, element) => {
+      const title = $(element).text().trim();
+      
+      if (title && 
+          title.length > 15 && 
+          title.length < 200 &&
+          !seenTitles.has(title)) {
+        
+        seenTitles.add(title);
+        titles.push(title);
+      }
+    });
+    
+    return [...new Set(titles)].slice(0, 50);
+  } catch (error) {
+    console.error('Error scraping FAZ:', error);
+    return [];
+  }
+};
+
+/**
+ * Scrape Der Spiegel news
+ */
+const scrapeSpiegelNews = async (): Promise<string[]> => {
+  try {
+    const client = createHttpClient();
+    const response = await client.get(NEWS_SOURCES[NewsSourceId.SPIEGEL].url);
+    const html = decodeResponse(response.data as ArrayBuffer, response.headers['content-type'] as string);
+    const $ = cheerio.load(html);
+    
+    const titles: string[] = [];
+    
+    // Try multiple selectors for Der Spiegel
+    const selectors = [
+      'h1 a',
+      'h2 a',
+      'h3 a',
+      '.article-title',
+      '.headline',
+      '.title',
+      'article h1',
+      'article h2'
+    ];
+    
+    selectors.forEach(selector => {
+      $(selector).each((_, element) => {
+        const title = $(element).text().trim();
+        if (title && title.length > 10) {
+          titles.push(title);
+        }
+      });
+    });
+    
+    return [...new Set(titles)].slice(0, 50);
+  } catch (error) {
+    console.error('Error scraping Der Spiegel:', error);
+    return [];
+  }
+};
+
+/**
  * Main scraping function that routes to appropriate scraper
  */
 const scrapeNews = async (sourceId: NewsSourceId): Promise<string[]> => {
@@ -344,12 +783,30 @@ const scrapeNews = async (sourceId: NewsSourceId): Promise<string[]> => {
       return await scrapeRepubblicaNews();
     case NewsSourceId.ANSA:
       return await scrapeAnsaNews();
+    case NewsSourceId.IL_SOLE_24_ORE:
+      return await scrapeIlSole24OreNews();
+    case NewsSourceId.SKY_TG24:
+      return await scrapeSkyTG24News();
     case NewsSourceId.REUTERS:
       return await scrapeReutersNews();
     case NewsSourceId.NYTIMES:
       return await scrapeNYTimesNews();
+    case NewsSourceId.INTERNAZIONALE:
+      return await scrapeInternazionaleNews();
+    case NewsSourceId.EURONEWS:
+      return await scrapeEuroNewsNews();
     case NewsSourceId.BADISCHE:
       return await scrapeBadischeNews();
+    case NewsSourceId.DW:
+      return await scrapeDWNews();
+    case NewsSourceId.TAGESSCHAU:
+      return await scrapeTagesschauNews();
+    case NewsSourceId.SUEDDEUTSCHE:
+      return await scrapeSueddeutscheNews();
+    case NewsSourceId.FAZ:
+      return await scrapeFAZNews();
+    case NewsSourceId.SPIEGEL:
+      return await scrapeSpiegelNews();
     case NewsSourceId.K68_IT:
     case NewsSourceId.K68_DE:
     case NewsSourceId.K68_US:

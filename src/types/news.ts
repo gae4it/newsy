@@ -76,9 +76,18 @@ export enum NewsSourceId {
   IL_FATTO = 'il-fatto',
   REPUBBLICA = 'repubblica', 
   ANSA = 'ansa',
+  IL_SOLE_24_ORE = 'il-sole-24-ore',
+  SKY_TG24 = 'sky-tg24',
   REUTERS = 'reuters',
   NYTIMES = 'nytimes',
+  INTERNAZIONALE = 'internazionale',
+  EURONEWS = 'euronews',
   BADISCHE = 'badische',
+  DW = 'dw',
+  TAGESSCHAU = 'tagesschau',
+  SUEDDEUTSCHE = 'sueddeutsche',
+  FAZ = 'faz',
+  SPIEGEL = 'spiegel',
   K68_IT = '68k-it',
   K68_DE = '68k-de',
   K68_US = '68k-us'
@@ -124,6 +133,20 @@ export const NEWS_SOURCES: Record<NewsSourceId, NewsSource> = {
     country: 'IT',
     category: 'italy'
   },
+  [NewsSourceId.IL_SOLE_24_ORE]: {
+    id: NewsSourceId.IL_SOLE_24_ORE,
+    name: 'Il Sole 24 Ore',
+    url: 'https://www.ilsole24ore.com/',
+    country: 'IT',
+    category: 'italy'
+  },
+  [NewsSourceId.SKY_TG24]: {
+    id: NewsSourceId.SKY_TG24,
+    name: 'SkyTg24',
+    url: 'https://tg24.sky.it/',
+    country: 'IT',
+    category: 'italy'
+  },
   [NewsSourceId.REUTERS]: {
     id: NewsSourceId.REUTERS,
     name: 'Reuters',
@@ -134,8 +157,22 @@ export const NEWS_SOURCES: Record<NewsSourceId, NewsSource> = {
   [NewsSourceId.NYTIMES]: {
     id: NewsSourceId.NYTIMES,
     name: 'New York Times',
-    url: 'https://www.nytimes.com/',
+    url: 'https://www.nytimes.com/section/world/',
     country: 'US',
+    category: 'international'
+  },
+  [NewsSourceId.INTERNAZIONALE]: {
+    id: NewsSourceId.INTERNAZIONALE,
+    name: 'Internazionale',
+    url: 'https://www.internazionale.it/',
+    country: 'IT',
+    category: 'international'
+  },
+  [NewsSourceId.EURONEWS]: {
+    id: NewsSourceId.EURONEWS,
+    name: 'EuroNews',
+    url: 'https://www.euronews.com/just-in/',
+    country: 'EU',
     category: 'international'
   },
   [NewsSourceId.BADISCHE]: {
@@ -144,6 +181,41 @@ export const NEWS_SOURCES: Record<NewsSourceId, NewsSource> = {
     url: 'https://www.badische-zeitung.de/',
     country: 'DE',
     category: 'regional'
+  },
+  [NewsSourceId.DW]: {
+    id: NewsSourceId.DW,
+    name: 'DW',
+    url: 'https://www.dw.com/en/top-stories/s-9097',
+    country: 'DE',
+    category: 'germany'
+  },
+  [NewsSourceId.TAGESSCHAU]: {
+    id: NewsSourceId.TAGESSCHAU,
+    name: 'Tagesschau',
+    url: 'https://www.tagesschau.de/inland',
+    country: 'DE',
+    category: 'germany'
+  },
+  [NewsSourceId.SUEDDEUTSCHE]: {
+    id: NewsSourceId.SUEDDEUTSCHE,
+    name: 'Süddeutsche Zeitung',
+    url: 'https://www.sueddeutsche.de/',
+    country: 'DE',
+    category: 'germany'
+  },
+  [NewsSourceId.FAZ]: {
+    id: NewsSourceId.FAZ,
+    name: 'Frankfurter Allgemeine',
+    url: 'https://www.faz.net/aktuell/',
+    country: 'DE',
+    category: 'germany'
+  },
+  [NewsSourceId.SPIEGEL]: {
+    id: NewsSourceId.SPIEGEL,
+    name: 'Der Spiegel',
+    url: 'https://www.spiegel.de/',
+    country: 'DE',
+    category: 'germany'
   },
   [NewsSourceId.K68_IT]: {
     id: NewsSourceId.K68_IT,
