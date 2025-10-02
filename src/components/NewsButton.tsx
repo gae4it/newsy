@@ -26,11 +26,14 @@ const NewsButton: React.FC<NewsButtonProps> = ({
   // Category color mapping for visual distinction
   const getCategoryColor = (category: string): string => {
     switch (category) {
-      case 'general': return 'bg-blue-500 hover:bg-blue-600';
-      case 'tech': return 'bg-purple-500 hover:bg-purple-600';
-      case 'international': return 'bg-green-500 hover:bg-green-600';
+      case 'italy': return 'bg-blue-500 hover:bg-blue-600';
+      case 'international': return 'bg-red-500 hover:bg-red-600';
+      case 'germany': return 'bg-yellow-500 hover:bg-yellow-600';
       case 'regional': return 'bg-orange-500 hover:bg-orange-600';
-      case 'news': return 'bg-red-500 hover:bg-red-600';
+      case 'tech': return 'bg-purple-500 hover:bg-purple-600';
+      // Legacy categories for backward compatibility
+      case 'general': return 'bg-blue-500 hover:bg-blue-600';
+      case 'news': return 'bg-blue-500 hover:bg-blue-600';
       default: return 'bg-gray-500 hover:bg-gray-600';
     }
   };

@@ -18,13 +18,50 @@ const createHttpClient = () => {
       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
       'Accept-Language': 'de-DE,de;q=0.9,en-US,en;q=0.8,it;q=0.7',
       'Accept-Encoding': 'gzip, deflate, br',
-      'Accept-Charset': 'utf-8, iso-8859-1;q=0.5',
+      'Accept-Charset': 'utf-8, iso-8859-1;q=0.5, windows-1252;q=0.3',
       'Connection': 'keep-alive',
     },
-    // Ensure proper UTF-8 encoding for German characters
-    responseType: 'text',
-    responseEncoding: 'utf8'
+    // Handle response as arraybuffer for proper encoding detection
+    responseType: 'arraybuffer'
   });
+};
+
+/**
+ * Decode response data with proper charset handling for German characters
+ */
+const decodeResponse = (data: ArrayBuffer, contentType?: string): string => {
+  const buffer = Buffer.from(data);
+  
+  // Try to detect encoding from content-type header
+  let encoding = 'utf-8';
+  if (contentType) {
+    const charsetRegex = /charset=([^;]+)/i;
+    const charsetMatch = charsetRegex.exec(contentType);
+    if (charsetMatch?.[1]) {
+      encoding = charsetMatch[1].toLowerCase();
+    }
+  }
+  
+  // Handle different encodings commonly used by German sites
+  try {
+    switch (encoding) {
+      case 'iso-8859-1':
+      case 'latin1':
+        return buffer.toString('latin1');
+      case 'windows-1252':
+      case 'cp1252':
+        return buffer.toString('latin1');
+      case 'utf-8':
+      default:
+        try {
+          return buffer.toString('utf-8');
+        } catch {
+          return buffer.toString('latin1');
+        }
+    }
+  } catch {
+    return buffer.toString('latin1');
+  }
 };
 
 /**
@@ -33,7 +70,8 @@ const createHttpClient = () => {
 const scrapeTelevideoNews = async (): Promise<string[]> => {
   const client = createHttpClient();
   const response = await client.get(NEWS_SOURCES[NewsSourceId.TELEVIDEO].url);
-  const $ = cheerio.load(response.data as string);
+  const html = decodeResponse(response.data as ArrayBuffer, response.headers['content-type'] as string);
+  const $ = cheerio.load(html);
   
   const titles: string[] = [];
   
@@ -100,7 +138,8 @@ const scrapeTelevideoNews = async (): Promise<string[]> => {
 const scrapeIlFattoNews = async (): Promise<string[]> => {
   const client = createHttpClient();
   const response = await client.get(NEWS_SOURCES[NewsSourceId.IL_FATTO].url);
-  const $ = cheerio.load(response.data as string);
+  const html = decodeResponse(response.data as ArrayBuffer, response.headers['content-type'] as string);
+  const $ = cheerio.load(html);
   
   const titles: string[] = [];
   
@@ -121,7 +160,8 @@ const scrapeIlFattoNews = async (): Promise<string[]> => {
 const scrapeRepubblicaNews = async (): Promise<string[]> => {
   const client = createHttpClient();
   const response = await client.get(NEWS_SOURCES[NewsSourceId.REPUBBLICA].url);
-  const $ = cheerio.load(response.data as string);
+  const html = decodeResponse(response.data as ArrayBuffer, response.headers['content-type'] as string);
+  const $ = cheerio.load(html);
   
   const titles: string[] = [];
   
@@ -142,7 +182,8 @@ const scrapeRepubblicaNews = async (): Promise<string[]> => {
 const scrapeAnsaNews = async (): Promise<string[]> => {
   const client = createHttpClient();
   const response = await client.get(NEWS_SOURCES[NewsSourceId.ANSA].url);
-  const $ = cheerio.load(response.data as string);
+  const html = decodeResponse(response.data as ArrayBuffer, response.headers['content-type'] as string);
+  const $ = cheerio.load(html);
   
   const titles: string[] = [];
   
@@ -163,7 +204,8 @@ const scrapeAnsaNews = async (): Promise<string[]> => {
 const scrapeReutersNews = async (): Promise<string[]> => {
   const client = createHttpClient();
   const response = await client.get(NEWS_SOURCES[NewsSourceId.REUTERS].url);
-  const $ = cheerio.load(response.data as string);
+  const html = decodeResponse(response.data as ArrayBuffer, response.headers['content-type'] as string);
+  const $ = cheerio.load(html);
   
   const titles: string[] = [];
   
@@ -184,7 +226,8 @@ const scrapeReutersNews = async (): Promise<string[]> => {
 const scrapeNYTimesNews = async (): Promise<string[]> => {
   const client = createHttpClient();
   const response = await client.get(NEWS_SOURCES[NewsSourceId.NYTIMES].url);
-  const $ = cheerio.load(response.data as string);
+  const html = decodeResponse(response.data as ArrayBuffer, response.headers['content-type'] as string);
+  const $ = cheerio.load(html);
   
   const titles: string[] = [];
   
@@ -205,7 +248,8 @@ const scrapeNYTimesNews = async (): Promise<string[]> => {
 const scrapeBadischeNews = async (): Promise<string[]> => {
   const client = createHttpClient();
   const response = await client.get(NEWS_SOURCES[NewsSourceId.BADISCHE].url);
-  const $ = cheerio.load(response.data as string);
+  const html = decodeResponse(response.data as ArrayBuffer, response.headers['content-type'] as string);
+  const $ = cheerio.load(html);
   
   const titles: string[] = [];
   
@@ -233,16 +277,19 @@ const scrape68kNews = async (sourceId: NewsSourceId): Promise<string[]> => {
     headers: {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      'Accept-Language': 'en-US,en;q=0.5',
+      'Accept-Language': 'de-DE,de;q=0.9,en-US,en;q=0.5',
+      'Accept-Charset': 'utf-8, iso-8859-1;q=0.5, windows-1252;q=0.3',
       'Connection': 'keep-alive',
     },
-    // Disable SSL verification for this source
+    // Handle response as arraybuffer for proper encoding
+    responseType: 'arraybuffer',
     httpsAgent: false,
   });
 
   try {
     const response = await client.get(httpUrl);
-    const $ = cheerio.load(response.data as string);
+    const html = decodeResponse(response.data as ArrayBuffer, response.headers['content-type'] as string);
+    const $ = cheerio.load(html);
     
     const titles: string[] = [];
     
